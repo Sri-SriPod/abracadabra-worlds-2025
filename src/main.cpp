@@ -101,12 +101,11 @@ lemlib::Chassis chassis(drivetrain,
                         &steer_curve
 );
 
-
-
 const int numStates = 3;
-int states[numStates] = {5, 34, 150};
+int states[numStates] = {5, 33, 150};
 int currState = 0;
 int target = states[0];
+bool manualcontrol = false;
 
 void nextState() {
     currState += 1;
@@ -150,7 +149,9 @@ void initialize() {
             pros::lcd::print(1, "target: %d", target);
             pros::lcd::print(2, "distance: %d", lbdist.get_distance());
             pros::lcd::print(3, "distance: %d", lbdist.get_confidence());
-
+            // if (!manualcontrol){
+            //     ladybrown();
+            // }
             ladybrown();
             // if (lbdist.get_distance() < 10 && (lbdist.get_distance() > 5)){
             //     intake.brake();
@@ -232,31 +233,29 @@ void opcontrol() {
             }
 
             pros::delay(170); // how long you can press it for
-
         }
-        // if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_R2)){
-        //     if (doinker_value){
-        //         doinker.set_value(false);
-        //         doinker_value = false;
-        //     }
-        //     else{
-        //         doinker.set_value(true);
-        //         doinker_value = true;
-        //     }
 
-        //     pros::delay(170); // how long you can press it for
-        // }
         if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_R1)){
             intake.move(127);
         }
         else{
             intake.brake();
         }
+        pros::delay(20);
+
+        // if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L2)){
+        //     manualcontrol = true;
+
+
+
+        // }
         
         if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_R2)){
             nextState();
-            pros::delay(170);
+            pros::delay(50);
         }
+
+        
         
         pros::delay(20);
     }
