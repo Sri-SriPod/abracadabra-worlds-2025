@@ -16,17 +16,20 @@
 pros::Controller controller(pros::E_CONTROLLER_MASTER);
 
 // drivetrain motors
-pros::MotorGroup left_motor_group({-1, -2, -3}, pros::MotorGearset::blue); // left motors on ports 1, 2, 3
-pros::MotorGroup right_motor_group({4, 5, 6}, pros::MotorGearset::blue); // right motors on ports 19, 20, 18
+// pros::MotorGroup left_motor_group({-18, 19, -20}, pros::MotorGearset::blue); // left motors on ports 1, 2, 3
+// pros::MotorGroup right_motor_group({12, -11, 13}, pros::MotorGearset::blue); // right motors on ports 19, 20, 18
+
+pros::MotorGroup left_motor_group({-18, -20, 19}, pros::MotorGearset::blue); // left motors on ports 1, 2, 3
+pros::MotorGroup right_motor_group({12, 13, -11}, pros::MotorGearset::blue); // right motors on ports 19, 20, 18
 pros::adi::DigitalOut mogo ('A');
 // pros::adi::DigitalOut doinker ('B');
 // pros::adi::DigitalOut mogorush('C');
 // pros::adi::DigitalOut ringrush('D');
 
-pros::Motor intake (20);
-pros::Motor lb(11);
-pros::Rotation lbrot(12);
-pros::Distance lbdist(19);
+pros::Motor intake (16);
+pros::Motor lb(15);
+pros::Rotation lbrot(17);
+// pros::Distance lbdist(19);
 pros::Optical lbcolor(14);
 
 bool mogo_value = false;
@@ -101,11 +104,11 @@ lemlib::Chassis chassis(drivetrain,
                         &steer_curve
 );
 
-const int numStates = 3;
-int states[numStates] = {5, 33, 150};
+const int numStates = 5;
+int states[numStates] = {5, 32, 70, 120, 250};
 int currState = 0;
 int target = states[0];
-bool manualcontrol = false;
+bool manualcontrol = true;
 
 void nextState() {
     currState += 1;
@@ -113,6 +116,18 @@ void nextState() {
         currState = 0;
     }
     target = states[currState];
+}
+
+void snap() {
+    int currPos = lbrot.get_position()/100;
+    int closest = states[0];
+    for (int i=0; i<numStates; i++){
+        if ((abs(states[i]) - currPos) < (abs(closest - currPos))){
+            closest = states[i];
+        }
+    }
+    target = closest;
+
 }
 
 void ladybrown() {
@@ -147,12 +162,16 @@ void initialize() {
     pros::Task lbtask([&]() {
         while (true) {
             pros::lcd::print(1, "target: %d", target);
-            pros::lcd::print(2, "distance: %d", lbdist.get_distance());
-            pros::lcd::print(3, "distance: %d", lbdist.get_confidence());
-            // if (!manualcontrol){
-            //     ladybrown();
-            // }
-            ladybrown();
+            // pros::lcd::print(2, "distance: %d", lbdist.get_distance());
+            // pros::lcd::print(3, "distance: %d", lbdist.get_confidence());
+            pros::lcd::print(3, "manualcontrol: %d", manualcontrol);
+            pros::lcd::print(4, "hue: %lf", lbcolor.get_hue());
+            if (!manualcontrol){
+                ladybrown();
+            }
+            if ((lbcolor.get_hue() < 230) && lbcolor.get_hue() > 200){
+                pros::lcd::print(5, "hue: %lf", lbcolor.get_hue());
+            }
             // if (lbdist.get_distance() < 10 && (lbdist.get_distance() > 5)){
             //     intake.brake();
             //     pros::lcd::print(4, "bababooey: %d", lbdist.get_distance());
@@ -222,7 +241,7 @@ void opcontrol() {
         // if want to prioritize turning over throttle, value closer to 1.
         // chassis.arcade(rightY, leftX, false, 0.75);
         
-        if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L1)){
+        if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_R2)){
             if (mogo_value){
                 mogo.set_value(false);
                 mogo_value = false;
@@ -234,29 +253,26 @@ void opcontrol() {
 
             pros::delay(170); // how long you can press it for
         }
-
         if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_R1)){
             intake.move(127);
         }
         else{
             intake.brake();
         }
-        pros::delay(20);
 
-        // if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L2)){
-        //     manualcontrol = true;
-
-
-
-        // }
-        
-        if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_R2)){
-            nextState();
-            pros::delay(50);
+        if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L1)){
+            manualcontrol = true;
+            lb.move(127);
+        }
+        else{
+            snap();
+            manualcontrol = false;
+        }
+        if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L2)){
+            manualcontrol = true;
+            lb.move(-127);
         }
 
-        
-        
         pros::delay(20);
     }
 
