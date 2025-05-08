@@ -1,5 +1,6 @@
 #include "main.h"
 #include "lemlib/api.hpp" // IWYU pragma: keep
+#include "lemlib/chassis/chassis.hpp"
 #include "lemlib/chassis/trackingWheel.hpp"
 #include "liblvgl/llemu.hpp"
 #include "pros/adi.hpp"
@@ -161,7 +162,7 @@ void initialize() {
         while (true) {
             bool blue = ((lbcolor.get_hue() < 300) && (lbcolor.get_hue() > 120)) && ((lbcolor.get_proximity() > 245) && (target != states[1]));
             bool red = ((lbcolor.get_hue() < 10) || (lbcolor.get_hue() > 300)) && ((lbcolor.get_proximity() > 245) && (target != states[1]));
-            if (red){
+            if (blue){
                 initial = intake.get_position();
                 pros::lcd::print(2, "yooooo: %f", initial);
                 colordetect = true;
@@ -312,31 +313,32 @@ void jiggle(){
 
 void blue_pos(){
     chassis.setPose(62.569, -23, 90);
-    chassis.moveToPoint(23, -23, 1000, {.forwards=false});
+    chassis.moveToPoint(20, -23, 1000, {.forwards=false});
     // clamp mogo, lift intake
     pros::delay(1000);
     mogo.set_value(true);
     mogo_value = true;
-    // intakelift.set_value(true);
-    // intake_value = true;
+    intakelift.set_value(true);
+    intake_value = true;
     pros::delay(1000);
     intake.move(127);
     // get top ring
-    // chassis.turnToPoint(47.281, 0, 1000, {}, true);
-    // chassis.moveToPoint(47.281, 0, 1000, {.maxSpeed = 60}, true);
+    chassis.turnToPoint(47.281, 0, 1000, {}, true);
+    chassis.moveToPoint(47.281, 0, 1000, {.maxSpeed = 60}, true);
     intake.move(127);
+    pros::delay(1000);
     // get 2nd ring
     chassis.turnToPoint(25.326, -44.918, 1000, {}, true);
-    // intakelift.set_value(false);
-    // intake_value = false;
+    intakelift.set_value(false);
+    intake_value = false;
     intake.move(127);
     pros::delay(1000);
     chassis.moveToPoint(25.326, -44.918, 1000, {}, true);
-    pros::delay(1500);
+    pros::delay(2000);
     intake.move(127);
     // corner
-    chassis.turnToPoint(53.238, -63.169, 1000, {}, true);
-    chassis.moveToPoint(53.238, -63.169, 1000, {}, true);
+    chassis.turnToPoint(53.486, -65.129, 1000, {}, true);
+    chassis.moveToPoint(53.486, -65.129, 1000, {}, true);
     pros::delay(500);
     chassis.turnToPoint(66.39, -66.658, 1000, {}, true);
     pros::delay(1000);
@@ -346,17 +348,29 @@ void blue_pos(){
     pros::delay(2000);
     left_motor_group.move(-80);
     right_motor_group.move(-80);
-    pros::delay(70);
+    pros::delay(150); // 70 to 100
     left_motor_group.move(0);
     right_motor_group.move(0);
-    // touch bar
-    pros::delay(500);
-    chassis.turnToPoint(22.642, -22.642, 1000, {}, true);
-    manualcontrol = false;
-    target = 180;
-    chassis.moveToPoint(22.642, -22.642, 1000, {.maxSpeed = 100}, true);
     pros::delay(1000);
-    intake.move(0);
+    doinker.set_value(true);
+    doinker_value = true;
+    pros::delay(1000);
+    // chassis.turnToPoint(66.748, 66.727, 1000);
+
+    chassis.turnToPoint(-58.477, -21.772, 1000, {.direction=AngularDirection::CW_CLOCKWISE}, true);
+    pros::delay(1000);
+    doinker.set_value(false);
+    doinker_value = false;
+
+    // touch bar
+    // pros::delay(500);
+    // chassis.turnToPoint(22.642, -22.642, 1000, {}, true);
+    // manualcontrol = false;
+    // target = 180;
+    // chassis.moveToPoint(22.642, -22.642, 1000, {.maxSpeed = 100}, true);
+    // pros::delay(1000);
+    // intake.move(0);
+    
 }
 
 void blue_neg(){
@@ -434,8 +448,14 @@ void red_pos(){
     // target = 3;
     // pros::delay(1000);
     // chassis.turnToPoint(-23, -23, 1000, {.forwards=false});
+    
     chassis.setPose(-62.569, -23, 270);
-    chassis.moveToPoint(-23, -23, 1000, {.forwards=false});
+    chassis.turnToPoint(-32.353, -18.063, 1000, {.forwards=false});
+    pros::delay(500);
+    chassis.moveToPoint(-32.353, -18.063, 1000, {.forwards=false});
+    pros::delay(500);
+    chassis.turnToPoint(-20, -23, 1000, {.forwards=false});
+    chassis.moveToPoint(-20, -23, 1000, {.forwards=false});
     // clamp mogo, lift intake
     pros::delay(1000);
     mogo.set_value(true);
@@ -446,6 +466,7 @@ void red_pos(){
 
     pros::delay(1000);
     intake.move(127);
+    pros::delay(1000);
     // get top ring
 
     // chassis.turnToPoint(-47.281, 0, 1000, {}, true);
@@ -470,19 +491,28 @@ void red_pos(){
     intake.move(127);
     left_motor_group.move(60);
     right_motor_group.move(60);
-    pros::delay(2000);
+    pros::delay(1300);
     left_motor_group.move(-80);
     right_motor_group.move(-80);
-    pros::delay(100);
+    pros::delay(200);
     left_motor_group.move(0);
     right_motor_group.move(0);
+    pros::delay(1000);
+    doinker.set_value(true);
+    doinker_value = true;
+    pros::delay(500);
+    // chassis.turnToPoint(66.748, 66.727, 1000);
+    chassis.turnToPoint(-22.642, -22.642, 1000, {.direction=AngularDirection::CW_CLOCKWISE}, true);
+    pros::delay(1000);
+    doinker.set_value(false);
+    doinker_value = false;
+
     // touch bar
-    chassis.turnToPoint(-22.642, -22.642, 1000, {}, true);
+    // chassis.turnToPoint(-22.642, -22.642, 1000, {}, true);
+    intake.move(127);
     manualcontrol = false;
     target = 180;
     chassis.moveToPoint(-22.642, -22.642, 1000, {.maxSpeed = 115}, true);
-    pros::delay(1200);
-    intake.move(0);
 }
 
 void red_neg(){
@@ -550,66 +580,57 @@ void red_neg(){
 }
 
 void blue_neg1() {
-    chassis.setPose(62.569, 23, 90);
-    chassis.moveToPoint(23, 23, 1000, {.forwards=false});
+    chassis.setPose(-62.569, 23, 270);
+    chassis.moveToPoint(-23, 23, 1000, {.forwards=false});
     // clamp mogo, lift intake
+    pros::delay(1000);
     mogo.set_value(true);
     mogo_value = true;
     intakelift.set_value(true);
     intake_value = true;
+    pros::delay(1000);
     intake.move(127);
-    pros::delay(500);
     // get top ring
-    chassis.turnToPoint(47.281, 0, 1000, {}, true);
-    chassis.moveToPoint(47.281, 0, 1000, {}, true);
+    chassis.turnToPoint(-47.281, 0, 1000, {}, true);
+    chassis.moveToPoint(-47.281, 0, 1000, {.maxSpeed = 100}, true);
     intake.move(127);
-    chassis.turnToPoint(4.525, 43.671, 1000, {}, true);
+    chassis.turnToPoint(-5.271, 42.041, 1000, {}, true);
     // lower intake
     intakelift.set_value(false);
     intake_value = false;
-    pros::delay(500);
-    chassis.moveToPoint(9.02, 38.676, 1000, {}, true);
-    pros::delay(700);
-    chassis.turnToPoint(8.021, 51.162, 1000, {}, true);
-    // from here, same code as before... (corner + doinker)
-    chassis.turnToPoint(60.25, 60.09, 1000, {}, true);
-    chassis.moveToPoint(60.25, 60.09, 1000, {}, true);
-    pros::delay(500);
-    chassis.turnToHeading(47, 1000, {}, false);
-    pros::delay(50);
-    // left_motor_group.move(-127);
-    // right_motor_group.move(-127);
-    // pros::delay(45);
-    // left_motor_group.move(0);
-    // right_motor_group.move(0);
-    doinker.set_value(true);
-    doinker_value = true;
-    pros::delay(500);
-    chassis.turnToPoint(23.376, -47.229, 1000, {}, true);
-    doinker.set_value(false);
-    doinker_value = false;
-    pros::delay(500);
-    chassis.turnToHeading(44, 1000, {}, false);
-    pros::delay(500);
     intake.move(127);
-    // get last ring
-    left_motor_group.move(80);
-    right_motor_group.move(80);
     pros::delay(500);
+    chassis.moveToPoint(-5.271, 42.041, 1000, {}, true);
+    pros::delay(900);
+    chassis.turnToPoint(-10.907, 59.218, 1000, {}, true);
+    chassis.moveToPoint(-10.907, 59.218, 1000, {}, true);
+    pros::delay(1000);
+    intake.move(127);
+    chassis.turnToPoint(-23.79, 47.409, 1000, {}, true);
+    chassis.moveToPoint(-23.79, 47.409, 1000, {}, true);
+    pros::delay(1000);
+    // from here, same code as before... (corner + doinker)
+    chassis.turnToPoint(-53.238, 63.169, 1000, {}, true);
+    chassis.moveToPoint(-53.238, 63.169, 1000, {}, true);
+    pros::delay(100);
+    chassis.turnToPoint(-66.39, 66.658, 1000, {}, true);
+    pros::delay(100);
+    intake.move(127);
+    left_motor_group.move(60);
+    right_motor_group.move(60);
+    pros::delay(2000);
     left_motor_group.move(-80);
     right_motor_group.move(-80);
-    pros::delay(150);
+    pros::delay(1000);
     left_motor_group.move(0);
     right_motor_group.move(0);
-    intake.move(127);
     // touch bar
-    chassis.turnToPoint(18.01, 18.509, 1000, {}, true);
+    chassis.turnToPoint(-18.01, 18.509, 1000, {}, true);
     manualcontrol = false;
     target = 70;
-    chassis.moveToPoint(18.01, 18.509, 1000, {}, true);
+    chassis.moveToPoint(-18.01, 18.509, 1000, {}, true);
     pros::delay(1000);
     intake.move(0);
-    pros::delay(1000);
 }
 
 void red_neg1(){
@@ -621,8 +642,8 @@ void red_neg1(){
     mogo_value = true;
     intakelift.set_value(true);
     intake_value = true;
+    pros::delay(1000);
     intake.move(127);
-    pros::delay(2500);
     // get top ring
     chassis.turnToPoint(-47.281, 0, 1000, {}, true);
     chassis.moveToPoint(-47.281, 0, 1000, {.maxSpeed = 100}, true);
@@ -670,12 +691,20 @@ void red_neg1(){
 
 void autonomous() {
     // 12.625 by 15
+    // pros::delay(500);
+    // left_motor_group.move(80);
+    // right_motor_group.move(80);
+    // pros::delay(200);
+    // left_motor_group.move(0);
+    // right_motor_group.move(0);
+    // pros::delay(1000);
+
     // chassis.setPose(0, 0, 0);
     // chassis.moveToPoint(0, 48, 1000);
     // chassis.turnToHeading(180, 1000);
     // blue_pos(); // 4 rings in mogo
     // blue_neg(); // 4 rings in mogo
-    // red_neg(); // 4 rings in mogo
+    // // red_neg(); // 4 rings in mogo
     red_pos(); // 4 rings in mogo
     // blue_neg1(); // 6 rings in mogo
     // red_neg1(); // 6 rings in mogo
